@@ -1,0 +1,1454 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎯 备考高效管理与可视化看板</title>
+    <style>
+        :root {
+            --bg-main: #f8fafc;
+            --bg-card: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --primary-light: #e0e7ff;
+            --success: #10b981;
+            --success-light: #d1fae5;
+            --warning: #f59e0b;
+            --warning-light: #fef3c7;
+            --danger: #ef4444;
+            --danger-light: #fee2e2;
+            --border: #e2e8f0;
+            --radius-lg: 14px;
+            --radius-md: 8px;
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+            --shadow-md: 0 10px 15px -3px rgb(0 0 0 / 0.07), 0 4px 6px -4px rgb(0 0 0 / 0.07);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Microsoft YaHei", sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding: 24px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(135deg, #4f46e5, #0ea5e9);
+            color: white;
+            padding: 24px;
+            border-radius: var(--radius-lg);
+            margin-bottom: 24px;
+            box-shadow: var(--shadow);
+        }
+
+        .header-title h1 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .header-title p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        button {
+            cursor: pointer;
+            padding: 8px 16px;
+            border: none;
+            border-radius: var(--radius-md);
+            font-weight: 500;
+            transition: all 0.2s;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+        .btn-primary:hover { background-color: var(--primary-hover); }
+
+        .btn-white {
+            background-color: white;
+            color: var(--primary);
+        }
+        .btn-white:hover { background-color: #f1f5f9; }
+
+        .btn-secondary {
+            background-color: #e2e8f0;
+            color: var(--text-main);
+        }
+        .btn-secondary:hover { background-color: #cbd5e1; }
+
+        .btn-danger-light {
+            background-color: var(--danger-light);
+            color: var(--danger);
+        }
+        .btn-danger-light:hover { background-color: #fca5a5; color: white; }
+
+        /* Dashboard Summary */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background-color: var(--bg-card);
+            padding: 20px;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: var(--text-muted);
+            font-weight: 500;
+            margin-bottom: 6px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .stat-desc {
+            font-size: 12px;
+            margin-top: 4px;
+            color: var(--text-muted);
+        }
+
+        /* Main Workspace Layout */
+        .workspace {
+            display: grid;
+            grid-template-columns: 360px 1fr;
+            gap: 24px;
+        }
+
+        @media (max-width: 1024px) {
+            .workspace {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Sidebar - Timeline */
+        .sidebar-panel {
+            background-color: var(--bg-card);
+            padding: 20px;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            height: fit-content;
+            position: sticky;
+            top: 24px;
+        }
+
+        .panel-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid var(--border);
+            color: var(--text-main);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 20px;
+            margin-top: 10px;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 4px;
+            top: 8px;
+            bottom: 8px;
+            width: 2px;
+            background-color: var(--border);
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .timeline-dot {
+            position: absolute;
+            left: -20px;
+            top: 6px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: var(--border);
+            border: 2px solid var(--bg-card);
+            transition: all 0.3s;
+        }
+
+        .timeline-item.active .timeline-dot {
+            background-color: var(--primary);
+            box-shadow: 0 0 0 4px var(--primary-light);
+        }
+        .timeline-item.urgent .timeline-dot {
+            background-color: var(--danger);
+            box-shadow: 0 0 0 4px var(--danger-light);
+        }
+        .timeline-item.passed .timeline-dot {
+            background-color: var(--text-muted);
+        }
+
+        .timeline-content {
+            background-color: #f8fafc;
+            padding: 10px 14px;
+            border-radius: var(--radius-md);
+            border-left: 3px solid var(--border);
+        }
+
+        .timeline-item.active .timeline-content { border-left-color: var(--primary); background-color: #f5f3ff; }
+        .timeline-item.urgent .timeline-content { border-left-color: var(--danger); background-color: #fff5f5; }
+        .timeline-item.passed .timeline-content { border-left-color: var(--text-muted); opacity: 0.7; }
+
+        .timeline-time {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+        .timeline-name {
+            font-size: 14px;
+            font-weight: 600;
+            margin: 2px 0;
+        }
+        .timeline-countdown {
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-top: 4px;
+        }
+        .status-safe { background-color: var(--success-light); color: var(--success); }
+        .status-warning { background-color: var(--warning-light); color: var(--warning); }
+        .status-urgent { background-color: var(--danger-light); color: var(--danger); }
+        .status-passed { background-color: #e2e8f0; color: var(--text-muted); }
+
+        /* Main Content - Course Grid */
+        .main-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .course-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        .course-card {
+            background-color: var(--bg-card);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .course-card:hover {
+            box-shadow: var(--shadow-md);
+        }
+
+        .course-header {
+            padding: 18px 20px;
+            background-color: #fafafa;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .course-title-area h3 {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .course-meta {
+            display: flex;
+            gap: 12px;
+            margin-top: 6px;
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .course-progress-container {
+            width: 140px;
+            text-align: right;
+        }
+
+        .progress-bar-bg {
+            width: 100%;
+            height: 6px;
+            background-color: #e2e8f0;
+            border-radius: 3px;
+            margin-top: 6px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4f46e5, #10b981);
+            width: 0%;
+            transition: width 0.4s ease;
+        }
+
+        .course-body {
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            background-color: #fff;
+        }
+
+        @media (max-width: 768px) {
+            .course-body {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .section-box {
+            background-color: #f8fafc;
+            border-radius: var(--radius-md);
+            padding: 16px;
+            border: 1px solid var(--border);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-main);
+            border-left: 3px solid var(--primary);
+            padding-left: 8px;
+        }
+
+        /* Lists and items */
+        .chapter-item {
+            background-color: white;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+
+        .chapter-title-row {
+            padding: 8px 12px;
+            background-color: #f1f5f9;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .points-list, .methods-list {
+            padding: 8px 12px;
+            list-style: none;
+        }
+
+        .check-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 4px 0;
+            font-size: 13px;
+        }
+
+        .check-item-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .check-item input[type="checkbox"] {
+            width: 15px;
+            height: 15px;
+            cursor: pointer;
+            accent-color: var(--primary);
+        }
+
+        .check-item.done .text-content {
+            text-decoration: line-through;
+            color: var(--text-muted);
+        }
+
+        .btn-mini-del {
+            background: none;
+            color: var(--danger);
+            padding: 2px 4px;
+            font-size: 11px;
+            opacity: 0.6;
+        }
+        .btn-mini-del:hover { opacity: 1; }
+
+        .btn-add-inline {
+            background: none;
+            color: var(--primary);
+            font-size: 12px;
+            padding: 2px 6px;
+            border: 1px dashed var(--primary);
+            border-radius: 4px;
+            margin-top: 4px;
+            width: 100%;
+            justify-content: center;
+        }
+        .btn-add-inline:hover { background-color: var(--primary-light); }
+
+        /* Modals / Forms */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.4);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 16px;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 24px;
+            border-radius: var(--radius-lg);
+            width: 100%;
+            max-width: 500px;
+            box-shadow: var(--shadow-md);
+            animation: slideDown 0.2s ease-out;
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-header {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .form-group {
+            margin-bottom: 14px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 4px;
+            color: var(--text-main);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            font-size: 14px;
+            outline: none;
+        }
+        .form-control:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-light);
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            background-color: white;
+            border-radius: var(--radius-lg);
+            border: 2px dashed var(--border);
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Header -->
+    <header>
+        <div class="header-title">
+            <h1>🎯 个人备考智能化管理看板</h1>
+            <p>实时时间轴、知识点树状盘点、刷题型考法深度跟踪系统</p>
+        </div>
+        <div class="header-actions">
+            <button class="btn-white" onclick="openCourseModal()">➕ 新增考试课程</button>
+            <button class="btn-secondary" style="background: rgba(255,255,255,0.15); color: white;" onclick="exportData()">📤 导出备份</button>
+            <button class="btn-secondary" style="background: rgba(255,255,255,0.15); color: white;" onclick="importData()">📥 导入数据</button>
+        </div>
+    </header>
+
+    <!-- Dashboard Quick Stats -->
+    <div class="dashboard-grid">
+        <div class="stat-card">
+            <span class="stat-label">📚 总报考课程</span>
+            <span class="stat-value" id="stat-total-courses">0</span>
+            <span class="stat-desc">已规划在册的考试科目</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-label">⏳ 最近一场考试</span>
+            <span class="stat-value" id="stat-next-exam" style="font-size: 18px; color: var(--danger);">暂无近期考试</span>
+            <span class="stat-desc" id="stat-next-countdown">核心备考焦点</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-label">📈 全科综合备考进度</span>
+            <span class="stat-value" id="stat-overall-progress">0%</span>
+            <div class="progress-bar-bg"><div class="progress-bar-fill" id="stat-progress-fill"></div></div>
+        </div>
+        <div class="stat-card">
+            <span class="stat-label">⏱️ 当前系统时间</span>
+            <span class="stat-value" id="stat-current-time" style="font-size: 16px; font-family: monospace; padding-top: 4px;">2026-06-21 17:29:00</span>
+            <span class="stat-desc" id="stat-days-total">实时同步精确倒计时</span>
+        </div>
+    </div>
+
+    <!-- Main Content Workspace -->
+    <div class="workspace">
+        <!-- Left Column: Visual Timeline -->
+        <div class="sidebar-panel">
+            <div class="panel-title">
+                <span>⏱️ 备考时间轴 (Chronological)</span>
+            </div>
+            <div class="timeline" id="timeline-container">
+                <!-- Dynamic timeline items -->
+            </div>
+        </div>
+
+        <!-- Right Column: Main Courses List -->
+        <div class="main-panel">
+            <div class="panel-title">
+                <span>📘 课程备考进度深度管理</span>
+            </div>
+            <div class="course-grid" id="course-grid-container">
+                <!-- Dynamic course cards -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add/Edit Course Modal -->
+<div class="modal" id="course-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="modal-title">新增科目信息</h3>
+            <button onclick="closeCourseModal()" style="background:none; font-size: 20px; color: var(--text-muted);">&times;</button>
+        </div>
+        <input type="hidden" id="form-course-id">
+        <div class="form-group">
+            <label for="form-course-name">课程名称 *</label>
+            <input type="text" id="form-course-name" class="form-control" placeholder="例如：数据库系统">
+        </div>
+        <div class="form-group">
+            <label for="form-course-time">考试开始时间 *</label>
+            <input type="datetime-local" id="form-course-time" class="form-control">
+        </div>
+        <div class="form-group">
+            <label for="form-course-endtime">考试结束时间</label>
+            <input type="text" id="form-course-endtime" class="form-control" placeholder="例如：16:30">
+        </div>
+        <div class="form-group">
+            <label for="form-course-credits">学分数</label>
+            <input type="number" id="form-course-credits" class="form-control" step="0.5" placeholder="例如：3">
+        </div>
+        <div class="modal-footer">
+            <button class="btn-secondary" onclick="closeCourseModal()">取消</button>
+            <button class="btn-primary" onclick="saveCourse()">确认保存</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // System core state
+    let state = {
+        courses: []
+    };
+
+    // Built-in initial data placeholder trigger
+    const IS_TEMPLATE_VERSION = true; 
+
+    const defaultPopulatedData = [
+        {
+            id: "course-1",
+            name: "数据库系统",
+            examTime: "2026-06-29T14:30",
+            examEnd: "16:30",
+            credits: 3.5,
+            chapters: [
+                {
+                    id: "ch-1-1",
+                    title: "第1-2章 绪论与关系数据库基础",
+                    points: [
+                        { id: "pt-1", name: "数据模型三要素（结构、操作、完整性）", done: true },
+                        { id: "pt-2", name: "数据库三级模式与两级映像结构", done: false },
+                        { id: "pt-3", name: "关系代数五种基本操作(并,差,笛卡尔积,投影,选择)", done: false }
+                    ]
+                },
+                {
+                    id: "ch-1-2",
+                    title: "第3-4章 SQL语言与数据库安全性",
+                    points: [
+                        { id: "pt-4", name: "SQL复杂嵌套查询与连接查询", done: false },
+                        { id: "pt-5", name: "视图(View)的作用与更新限制", done: false },
+                        { id: "pt-6", name: "自主存取控制(DAC)与强制存取控制(MAC)", done: false }
+                    ]
+                }
+            ],
+            questionTypes: [
+                {
+                    id: "qt-1-1",
+                    typeName: "单项选择题与填空题",
+                    methods: [
+                        { id: "mt-1", name: "考查封锁协议与并发控制概念", done: true },
+                        { id: "mt-2", name: "考查数据独立性与范式级别判断", done: false }
+                    ]
+                },
+                {
+                    id: "qt-1-2",
+                    typeName: "综合应用大题",
+                    methods: [
+                        { id: "mt-3", name: "E-R图绘制并转化为高质量关系模式(规范化)", done: false },
+                        { id: "mt-4", name: "根据业务需求手写SQL高级查询与触发器", done: false }
+                    ]
+                }
+            ]
+        },
+        {
+            id: "course-2",
+            name: "科技英语文献阅读与翻译",
+            examTime: "2026-06-30T14:30",
+            examEnd: "16:30",
+            credits: 2,
+            chapters: [
+                {
+                    id: "ch-2-1",
+                    title: "学术论文结构与典型词汇",
+                    points: [
+                        { id: "pt-7", name: "Abstract/Introduction常用时态与句型", done: false },
+                        { id: "pt-8", name: "图表描述词汇及逻辑衔接词", done: false }
+                    ]
+                }
+            ],
+            questionTypes: [
+                {
+                    id: "qt-2-1",
+                    typeName: "文献翻译与长难句分析",
+                    methods: [
+                        { id: "mt-5", name: "被动语态的汉译技巧", done: false },
+                        { id: "mt-6", name: "定语从句与分词短语拆分翻译法", done: false }
+                    ]
+                }
+            ]
+        },
+        {
+            id: "course-3",
+            name: "大学物理",
+            examTime: "2026-07-03T08:30",
+            examEnd: "10:30",
+            credits: 4,
+            chapters: [
+                {
+                    id: "ch-3-1",
+                    title: "电磁学核心板块",
+                    points: [
+                        { id: "pt-9", name: "高斯定理与库仑定律应用条件", done: false },
+                        { id: "pt-10", name: "毕奥-萨伐尔定律与安培环路定理", done: false }
+                    ]
+                },
+                {
+                    id: "ch-3-2",
+                    title: "波动与光学板块",
+                    points: [
+                        { id: "pt-11", name: "杨氏双缝干涉与薄膜干涉光程差", done: false }
+                    ]
+                }
+            ],
+            questionTypes: [
+                {
+                    id: "qt-3-1",
+                    typeName: "计算大题",
+                    methods: [
+                        { id: "mt-7", name: "对称性电场/磁场强度的积分求解", done: false },
+                        { id: "mt-8", name: "感应电动势与动生电动势综合计算", done: false }
+                    ]
+                }
+            ]
+        },
+        {
+            id: "course-4",
+            name: "机器学习与模式识别",
+            examTime: "2026-07-04T14:30",
+            examEnd: "16:30",
+            credits: 3,
+            chapters: [
+                {
+                    id: "ch-4-1",
+                    title: "监督学习基础算法",
+                    points: [
+                        { id: "pt-12", name: "线性回归推导与信息熵/信息增益计算", done: false },
+                        { id: "pt-13", name: "SVM大间隔分类器与核函数对偶问题", done: false }
+                    ]
+                }
+            ],
+            questionTypes: [
+                {
+                    id: "qt-4-1",
+                    typeName: "算法推导与计算题",
+                    methods: [
+                        { id: "mt-9", name: "贝叶斯分类器后验概率手算", done: false },
+                        { id: "mt-10", name: "反向传播算法梯度更新求导步骤", done: false }
+                    ]
+                }
+            ]
+        },
+        {
+            id: "course-5",
+            name: "操作系统",
+            examTime: "2026-07-06T08:30",
+            examEnd: "10:30",
+            credits: 4,
+            chapters: [
+                {
+                    id: "ch-5-1",
+                    title: "进程管理与并发控制",
+                    points: [
+                        { id: "pt-14", name: "进程同步PV操作与经典死锁避免(银行家算法)", done: false },
+                        { id: "pt-15", name: "调度算法(FCFS、SJF、HRRN、时间片轮转)", done: false }
+                    ]
+                },
+                {
+                    id: "ch-5-2",
+                    title: "内存与文件系统管理",
+                    points: [
+                        { id: "pt-16", name: "页面置换算法(FIFO, LRU, CLOCK)及缺页计算", done: false },
+                        { id: "pt-17", name: "磁盘调度算法(FCFS, SSTF, SCAN)", done: false }
+                    ]
+                }
+            ],
+            questionTypes: [
+                {
+                    id: "qt-5-1",
+                    typeName: "PV操作综合大题",
+                    methods: [
+                        { id: "mt-11", name: "生产者-消费者变种、读者-写者同步模型建立", done: false }
+                    ]
+                },
+                {
+                    id: "qt-5-2",
+                    typeName: "地址转换与内存大题",
+                    methods: [
+                        { id: "mt-12", name: "多级页表、TLB快表结合的逻辑到物理地址计算", done: false }
+                    ]
+                }
+            ]
+        },
+        {
+            id: "course-6",
+            name: "高级程序设计",
+            examTime: "2026-07-06T14:30",
+            examEnd: "16:30",
+            credits: 3,
+            chapters: [
+                {
+                    id: "ch-6-1",
+                    title: "指针与高级内存控制",
+                    points: [
+                        { id: "pt-18", name: "函数指针、指针数组与多维指针演练", done: false },
+                        { id: "pt-19", name: "动态内存分配原理与防泄漏机制", done: false }
+                    ]
+                }
+            ],
+            questionTypes: [
+                {
+                    id: "qt-6-1",
+                    typeName: "代码填空与程序设计大题",
+                    methods: [
+                        { id: "mt-13", name: "复杂链表/二叉树的递归与非递归算法编写", done: false }
+                    ]
+                }
+            ]
+        },
+        {
+            id: "course-7",
+            name: "马克思主义基本原理",
+            examTime: "2026-07-07T08:30",
+            examEnd: "10:30",
+            credits: 3,
+            chapters: [
+                {
+                    id: "ch-7-1",
+                    title: "唯物辩证法与认识论",
+                    points: [
+                        { id: "pt-20", name: "两大总特征、三大规律、五对基本范畴", done: false },
+                        { id: "pt-21", name: "实践对认识的决定作用与认识的反作用", done: false }
+                    ]
+                }
+            ],
+            questionTypes: [
+                {
+                    id: "qt-7-1",
+                    typeName: "论述题与材料分析题",
+                    methods: [
+                        { id: "mt-14", name: "结合时政材料，运用矛盾普遍性与特殊性原理进行分析说明", done: false }
+                    ]
+                }
+            ]
+        },
+        {
+            id: "course-8",
+            name: "算法设计与分析",
+            examTime: "2026-07-08T14:30",
+            examEnd: "16:30",
+            credits: 3,
+            chapters: [
+                {
+                    id: "ch-8-1",
+                    title: "核心算法设计策略",
+                    points: [
+                        { id: "pt-22", name: "分治策略（主定理Master Theorem快速求解复杂度）", done: false },
+                        { id: "pt-23", name: "动态规划(DP)状态转移方程设计(01背包,LCS)", done: false },
+                        { id: "pt-24", name: "贪心算法最优子结构与回溯/分支限界法", done: false }
+                    ]
+                }
+            ],
+            questionTypes: [
+                {
+                    id: "qt-8-1",
+                    typeName: "算法伪代码设计大题",
+                    methods: [
+                        { id: "mt-15", name: "手写动态规划空间优化版本代码并分析时空复杂度", done: false }
+                    ]
+                }
+            ]
+        },
+        {
+            id: "course-9",
+            name: "计算机体系结构与组成原理",
+            examTime: "2026-07-09T14:30",
+            examEnd: "16:30",
+            credits: 4,
+            chapters: [
+                {
+                    id: "ch-9-1",
+                    title: "流水线与存储体系结构",
+                    points: [
+                        { id: "pt-25", name: "流水线冲突(数据、结构、控制)及解决方法", done: false },
+                        { id: "pt-26", name: "Cache全相联/组相联映射及命中率计算", done: false }
+                    ]
+                }
+            ],
+            questionTypes: [
+                {
+                    id: "qt-9-1",
+                    typeName: "时序与架构分析大题",
+                    methods: [
+                        { id: "mt-16", name: "流水线时空图绘制与吞吐率、加速比求解", done: false },
+                        { id: "mt-17", name: "Cache-主存-外存多级存储层次平均访问时间分析", done: false }
+                    ]
+                }
+            ]
+        }
+    ];
+
+    // Initialize application
+    function init() {
+        const localData = localStorage.getItem('exam_prep_data');
+        if (localData) {
+            state = JSON.parse(localData);
+        } else {
+            state.courses = IS_TEMPLATE_VERSION ? [] : defaultPopulatedData;
+            saveToLocalStorage();
+        }
+        
+        // Setup clock updates
+        updateClock();
+        setInterval(updateClock, 1000);
+        
+        render();
+    }
+
+    function saveToLocalStorage() {
+        localStorage.setItem('exam_prep_data', JSON.stringify(state));
+    }
+
+    function updateClock() {
+        // Explicitly locked logic baseline to handle 2026 prompt tracking perfectly
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const seconds = String(now.getSeconds()).padStart(2, '0');
+        
+        document.getElementById('stat-current-time').innerText = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+        
+        // Periodically refresh data calculation on dynamic clock trigger to refresh countdowns badge statuses
+        calculateCountdowns();
+    }
+
+    // Helper to calculate countdown time strings
+    function getCountdownDetails(examTimeIsoStr) {
+        const now = new Date();
+        const examDate = new Date(examTimeIsoStr);
+        const diffMs = examDate - now;
+
+        if (isNaN(examDate.getTime())) {
+            return { text: "时间错误", status: "status-passed", days: 999 };
+        }
+
+        if (diffMs <= 0) {
+            return { text: "已开考/已结束", status: "status-passed", days: -1 };
+        }
+
+        const totalMins = Math.floor(diffMs / (1000 * 60));
+        const totalHours = Math.floor(totalMins / 60);
+        const days = Math.floor(totalHours / 24);
+        
+        const remHours = totalHours % 24;
+        const remMins = totalMins % 60;
+
+        let text = "";
+        if (days > 0) text += `${days}天 `;
+        text += `${remHours}时${remMins}分`;
+
+        let status = "status-safe";
+        if (days < 1) {
+            status = "status-urgent";
+        } else if (days < 3) {
+            status = "status-warning";
+        }
+
+        return { text: `剩 ${text}`, status: status, days: days };
+    }
+
+    // Dynamic stats aggregation and timeline update engine
+    function calculateCountdowns() {
+        if (state.courses.length === 0) return;
+
+        // Sort clone chronologically
+        const sorted = [...state.courses].sort((a,b) => new Date(a.examTime) - new Date(b.examTime));
+        const futureExams = sorted.filter(c => new Date(c.examTime) - new Date() > 0);
+
+        const nextExamVal = document.getElementById('stat-next-exam');
+        const nextCountdownVal = document.getElementById('stat-next-countdown');
+
+        if (futureExams.length > 0) {
+            const next = futureExams[0];
+            const cd = getCountdownDetails(next.examTime);
+            nextExamVal.innerText = `${next.name}`;
+            nextCountdownVal.innerText = `最近目标: ${cd.text}`;
+        } else {
+            nextExamVal.innerText = "全部考试已过";
+            nextExamVal.style.color = "var(--text-muted)";
+            nextCountdownVal.innerText = "轻舟已过万重山！";
+        }
+    }
+
+    // Comprehensive statistical calculations for a selected course progress metrics
+    function getCourseProgress(course) {
+        let totalItems = 0;
+        let doneItems = 0;
+
+        course.chapters.forEach(ch => {
+            ch.points.forEach(p => {
+                totalItems++;
+                if (p.done) doneItems++;
+            });
+        });
+
+        course.questionTypes.forEach(qt => {
+            qt.methods.forEach(m => {
+                totalItems++;
+                if (m.done) doneItems++;
+            });
+        });
+
+        return totalItems === 0 ? 0 : Math.round((doneItems / totalItems) * 100);
+    }
+
+    // System-wide Global UI Rendering Controller
+    function render() {
+        calculateCountdowns();
+        
+        // Render Top Global Stats counters
+        document.getElementById('stat-total-courses').innerText = state.courses.length;
+        
+        let overallPct = 0;
+        if (state.courses.length > 0) {
+            let sumPct = 0;
+            state.courses.forEach(c => sumPct += getCourseProgress(c));
+            overallPct = Math.round(sumPct / state.courses.length);
+        }
+        document.getElementById('stat-overall-progress').innerText = `${overallPct}%`;
+        document.getElementById('stat-progress-fill').style.width = `${overallPct}%`;
+
+        // Chronological sort for the visual left timeline
+        const sortedCourses = [...state.courses].sort((a,b) => new Date(a.examTime) - new Date(b.examTime));
+        
+        // Render Timeline
+        const timelineContainer = document.getElementById('timeline-container');
+        if (sortedCourses.length === 0) {
+            timelineContainer.innerHTML = '<div style="color:var(--text-muted); font-size:13px; text-align:center; padding:20px 0;">暂无考试安排，请添加科目</div>';
+        } else {
+            timelineContainer.innerHTML = sortedCourses.map(course => {
+                const cd = getCountdownDetails(course.examTime);
+                let itemClass = "";
+                if (cd.status === "status-urgent") itemClass = "urgent";
+                else if (cd.status === "status-passed") itemClass = "passed";
+                else if (cd.status === "status-warning" || cd.days <= 3) itemClass = "active";
+
+                const dateObj = new Date(course.examTime);
+                const displayTime = isNaN(dateObj.getTime()) ? "未知时间" : `${dateObj.getMonth()+1}/${dateObj.getDate()} ${String(dateObj.getHours()).padStart(2,'0')}:${String(dateObj.getMinutes()).padStart(2,'0')}`;
+
+                return `
+                    <div class="timeline-item ${itemClass}">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <div class="timeline-time">📅 ${displayTime} ${course.examEnd ? ' - ' + course.examEnd : ''}</div>
+                            <div class="timeline-name">${course.name}</div>
+                            <div class="timeline-countdown">
+                                <span class="status-badge ${cd.status}">${cd.text}</span>
+                                <span style="font-size:11px; color:var(--text-muted); margin-left:4px;">进度: ${getCourseProgress(course)}%</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Render Right Main Panels Grid
+        const gridContainer = document.getElementById('course-grid-container');
+        if (state.courses.length === 0) {
+            gridContainer.innerHTML = `
+                <div class="empty-state">
+                    <h3>💡 开启你的高效复习计划</h3>
+                    <p style="margin-top: 8px; font-size: 14px;">当前未录入任何考试科目，点击右上方“新增考试课程”按钮录入信息。</p>
+                </div>
+            `;
+        } else {
+            gridContainer.innerHTML = state.courses.map(course => {
+                const progress = getCourseProgress(course);
+                const dateObj = new Date(course.examTime);
+                const formattedDate = isNaN(dateObj.getTime()) ? course.examTime : `${dateObj.getFullYear()}-${String(dateObj.getMonth()+1).padStart(2,'0')}-${String(dateObj.getDate()).padStart(2,'0')} ${String(dateObj.getHours()).padStart(2,'0')}:${String(dateObj.getMinutes()).padStart(2,'0')}`;
+
+                return `
+                    <div class="course-card" id="card-${course.id}">
+                        <div class="course-header">
+                            <div class="course-title-area">
+                                <h3>📚 ${course.name}</h3>
+                                <div class="course-meta">
+                                    <div class="meta-item">⏱️ 考试: ${formattedDate} ${course.examEnd ? '至 ' + course.examEnd : ''}</div>
+                                    <div class="meta-item">💎 学分: ${course.credits || '未设'}</div>
+                                </div>
+                            </div>
+                            <div class="course-progress-container">
+                                <span style="font-size: 14px; font-weight: 700; color: var(--primary);">${progress}% 已掌握</span>
+                                <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: ${progress}%"></div></div>
+                                <div style="margin-top: 8px;">
+                                    <button class="btn-secondary" style="padding:2px 6px; font-size:11px;" onclick="openEditCourse('${course.id}')">编辑基础</button>
+                                    <button class="btn-danger-light" style="padding:2px 6px; font-size:11px; margin-left:4px;" onclick="deleteCourse('${course.id}')">删除</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="course-body">
+                            <!-- Knowledge Points Section Block -->
+                            <div class="section-box">
+                                <div class="section-header">
+                                    <span>🧠 知识点掌握盘点</span>
+                                    <button class="btn-primary" style="padding:2px 6px; font-size:11px;" onclick="addChapter('${course.id}')">+ 增加章节</button>
+                                </div>
+                                <div id="knowledge-tree-${course.id}">
+                                    ${course.chapters.map(ch => `
+                                        <div class="chapter-item">
+                                            <div class="chapter-title-row">
+                                                <span>📂 ${ch.title}</span>
+                                                <button class="btn-mini-del" onclick="deleteChapter('${course.id}', '${ch.id}')">删除章</button>
+                                            </div>
+                                            <ul class="points-list">
+                                                ${ch.points.map(p => `
+                                                    <li class="check-item ${p.done ? 'done' : ''}">
+                                                        <label class="check-item-label">
+                                                            <input type="checkbox" ${p.done ? 'checked' : ''} onchange="togglePoint('${course.id}', '${ch.id}', '${p.id}')">
+                                                            <span class="text-content">${p.name}</span>
+                                                        </label>
+                                                        <button class="btn-mini-del" onclick="deletePoint('${course.id}', '${ch.id}', '${p.id}')">&times;</button>
+                                                    </li>
+                                                `).join('')}
+                                                <button class="btn-add-inline" onclick="addPoint('${course.id}', '${ch.id}')">+ 细化具体知识点</button>
+                                            </ul>
+                                        </div>
+                                    `).join('')}
+                                    ${course.chapters.length === 0 ? '<div style="font-size:12px; color:var(--text-muted); text-align:center; padding:10px;">暂无模块，请先创建章节</div>' : ''}
+                                </div>
+                            </div>
+
+                            <!-- Question Practice Section Block -->
+                            <div class="section-box">
+                                <div class="section-header">
+                                    <span>📝 刷题与高频考法跟踪</span>
+                                    <button class="btn-primary" style="background-color:#0ea5e9; padding:2px 6px; font-size:11px;" onclick="addQuestionType('${course.id}')">+ 增加试卷题型</button>
+                                </div>
+                                <div id="question-tree-${course.id}">
+                                    ${course.questionTypes.map(qt => `
+                                        <div class="chapter-item" style="border-left: 2px solid #0ea5e9;">
+                                            <div class="chapter-title-row" style="background-color:#f0f9ff;">
+                                                <span style="color:#0369a1;">📋 ${qt.typeName}</span>
+                                                <button class="btn-mini-del" onclick="deleteQuestionType('${course.id}', '${qt.id}')">删除题型</button>
+                                            </div>
+                                            <ul class="methods-list">
+                                                ${qt.methods.map(m => `
+                                                    <li class="check-item ${m.done ? 'done' : ''}">
+                                                        <label class="check-item-label">
+                                                            <input type="checkbox" ${m.done ? 'checked' : ''} onchange="toggleMethod('${course.id}', '${qt.id}', '${m.id}')">
+                                                            <span class="text-content">${m.name}</span>
+                                                        </label>
+                                                        <button class="btn-mini-del" onclick="deleteMethod('${course.id}', '${qt.id}', '${m.id}')">&times;</button>
+                                                    </li>
+                                                `).join('')}
+                                                <button class="btn-add-inline" style="color:#0ea5e9; border-color:#0ea5e9;" onclick="addMethod('${course.id}', '${qt.id}')">+ 增加知识点考法/真题型</button>
+                                            </ul>
+                                        </div>
+                                    `).join('')}
+                                    ${course.questionTypes.length === 0 ? '<div style="font-size:12px; color:var(--text-muted); text-align:center; padding:10px;">暂无题型，请先新增题型板块</div>' : ''}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+    }
+
+    /* Core Dynamic Data Actions Implementation */
+    function openCourseModal() {
+        document.getElementById('modal-title').innerText = "新增科目信息";
+        document.getElementById('form-course-id').value = "";
+        document.getElementById('form-course-name').value = "";
+        document.getElementById('form-course-time').value = "";
+        document.getElementById('form-course-endtime').value = "";
+        document.getElementById('form-course-credits').value = "";
+        document.getElementById('course-modal').style.display = 'flex';
+    }
+
+    function openEditCourse(id) {
+        const course = state.courses.find(c => c.id === id);
+        if(!course) return;
+        document.getElementById('modal-title').innerText = "修改科目基础信息";
+        document.getElementById('form-course-id').value = course.id;
+        document.getElementById('form-course-name').value = course.name;
+        document.getElementById('form-course-time').value = course.examTime;
+        document.getElementById('form-course-endtime').value = course.examEnd || "";
+        document.getElementById('form-course-credits').value = course.credits || "";
+        document.getElementById('course-modal').style.display = 'flex';
+    }
+
+    function closeCourseModal() {
+        document.getElementById('course-modal').style.display = 'none';
+    }
+
+    function saveCourse() {
+        const id = document.getElementById('form-course-id').value;
+        const name = document.getElementById('form-course-name').value.trim();
+        const examTime = document.getElementById('form-course-time').value;
+        const examEnd = document.getElementById('form-course-endtime').value.trim();
+        const credits = parseFloat(document.getElementById('form-course-credits').value);
+
+        if (!name || !examTime) {
+            alert("课程名称和考试时间为必填项！");
+            return;
+        }
+
+        if (id) {
+            // Update mode
+            const course = state.courses.find(c => c.id === id);
+            if (course) {
+                course.name = name;
+                course.examTime = examTime;
+                course.examEnd = examEnd;
+                course.credits = credits || "";
+            }
+        } else {
+            // Create mode
+            const newCourse = {
+                id: 'course-' + Date.now(),
+                name: name,
+                examTime: examTime,
+                examEnd: examEnd,
+                credits: credits || "",
+                chapters: [],
+                questionTypes: []
+            };
+            state.courses.push(newCourse);
+        }
+
+        saveToLocalStorage();
+        closeCourseModal();
+        render();
+    }
+
+    function deleteCourse(id) {
+        if(confirm("确定要删除这门课程以及其下所有复习进度数据吗？")) {
+            state.courses = state.courses.filter(c => c.id !== id);
+            saveToLocalStorage();
+            render();
+        }
+    }
+
+    /* Sub-Tree Nodes Processing Core Hooks (Chapters / Points) */
+    function addChapter(courseId) {
+        const title = prompt("请输入新增的章节或大板块名称（例如：第一章 基础概念）：");
+        if(!title || !title.trim()) return;
+        const course = state.courses.find(c => c.id === courseId);
+        if(course) {
+            course.chapters.push({
+                id: 'ch-' + Date.now(),
+                title: title.trim(),
+                points: []
+            });
+            saveToLocalStorage();
+            render();
+        }
+    }
+
+    function deleteChapter(courseId, chapterId) {
+        if(confirm("确定删除该章节及旗下所有的具体核心知识点吗？")) {
+            const course = state.courses.find(c => c.id === courseId);
+            if(course) {
+                course.chapters = course.chapters.filter(ch => ch.id !== chapterId);
+                saveToLocalStorage();
+                render();
+            }
+        }
+    }
+
+    function addPoint(courseId, chapterId) {
+        const name = prompt("请输入该章节下的具体核心要点/考纲考点：");
+        if(!name || !name.trim()) return;
+        const course = state.courses.find(c => c.id === courseId);
+        if(course) {
+            const chapter = course.chapters.find(ch => ch.id === chapterId);
+            if(chapter) {
+                chapter.points.push({
+                    id: 'pt-' + Date.now(),
+                    name: name.trim(),
+                    done: false
+                });
+                saveToLocalStorage();
+                render();
+            }
+        }
+    }
+
+    function deletePoint(courseId, chapterId, pointId) {
+        const course = state.courses.find(c => c.id === courseId);
+        if(course) {
+            const chapter = course.chapters.find(ch => ch.id === chapterId);
+            if(chapter) {
+                chapter.points = chapter.points.filter(p => p.id !== pointId);
+                saveToLocalStorage();
+                render();
+            }
+        }
+    }
+
+    function togglePoint(courseId, chapterId, pointId) {
+        const course = state.courses.find(c => c.id === courseId);
+        if(course) {
+            const chapter = course.chapters.find(ch => ch.id === chapterId);
+            if(chapter) {
+                const point = chapter.points.find(p => p.id === pointId);
+                if(point) point.done = !point.done;
+                saveToLocalStorage();
+                render();
+            }
+        }
+    }
+
+    /* Sub-Tree Nodes Processing Core Hooks (Question Types / Testing Methods) */
+    function addQuestionType(courseId) {
+        const typeName = prompt("请输入试卷卷面常见题型名称（例如：名词解释、计算大题）：");
+        if(!typeName || !typeName.trim()) return;
+        const course = state.courses.find(c => c.id === courseId);
+        if(course) {
+            course.questionTypes.push({
+                id: 'qt-' + Date.now(),
+                typeName: typeName.trim(),
+                methods: []
+            });
+            saveToLocalStorage();
+            render();
+        }
+    }
+
+    function deleteQuestionType(courseId, typeId) {
+        if(confirm("确定删除本题型模块及归纳的所有对应知识点考法吗？")) {
+            const course = state.courses.find(c => c.id === courseId);
+            if(course) {
+                course.questionTypes = course.questionTypes.filter(qt => qt.id !== typeId);
+                saveToLocalStorage();
+                render();
+            }
+        }
+    }
+
+    function addMethod(courseId, typeId) {
+        const name = prompt("请输入针对该题型的核心考法、高频真题考点或核心切入方向：");
+        if(!name || !name.trim()) return;
+        const course = state.courses.find(c => c.id === courseId);
+        if(course) {
+            const qType = course.questionTypes.find(qt => qt.id === typeId);
+            if(qType) {
+                qType.methods.push({
+                    id: 'mt-' + Date.now(),
+                    name: name.trim(),
+                    done: false
+                });
+                saveToLocalStorage();
+                render();
+            }
+        }
+    }
+
+    function deleteMethod(courseId, typeId, methodId) {
+        const course = state.courses.find(c => c.id === courseId);
+        if(course) {
+            const qType = course.questionTypes.find(qt => qt.id === typeId);
+            if(qType) {
+                qType.methods = qType.methods.filter(m => m.id !== methodId);
+                saveToLocalStorage();
+                render();
+            }
+        }
+    }
+
+    function toggleMethod(courseId, typeId, methodId) {
+        const course = state.courses.find(c => c.id === courseId);
+        if(course) {
+            const qType = course.questionTypes.find(qt => qt.id === typeId);
+            if(qType) {
+                const method = qType.methods.find(m => m.id === methodId);
+                if(method) method.done = !method.done;
+                saveToLocalStorage();
+                render();
+            }
+        }
+    }
+
+    /* JSON Data Import / Export Engine System Backup Strategy */
+    function exportData() {
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state));
+        const downloadAnchor = document.createElement('a');
+        downloadAnchor.setAttribute("href", dataStr);
+        downloadAnchor.setAttribute("download", "my_exam_preparation_backup.json");
+        document.body.appendChild(downloadAnchor);
+        downloadAnchor.click();
+        downloadAnchor.remove();
+    }
+
+    function importData() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json';
+        input.onchange = e => {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+            reader.readAsText(file, 'UTF-8');
+            reader.onload = readerEvent => {
+                try {
+                    const content = JSON.parse(readerEvent.target.result);
+                    if(content && Array.isArray(content.courses)) {
+                        state = content;
+                        saveToLocalStorage();
+                        render();
+                        alert("🎉 数据成功完美导入还原！");
+                    } else {
+                        alert("文件格式有误，未能识别到合法有效的备考数据结构。");
+                    }
+                } catch (err) {
+                    alert("解析JSON失败，请检查备份文件是否完整损坏。");
+                }
+            }
+        }
+        input.click();
+    }
+
+    // Launch core loader
+    window.onload = init;
+</script>
+
+</body>
+</html>
